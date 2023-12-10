@@ -1,25 +1,29 @@
 import React from 'react';
+import { useContext } from 'react';
+
+import { SearchContext } from '../../App';
 
 import seacrh from '../../assets/img/search.svg';
 import closeSearch from '../../assets/img/closeSearch.svg';
 
 import styles from './Search.module.scss';
 
-const Search = ({ searchInput, setSearchInput }) => {
+const Search = () => {
+  const context = useContext(SearchContext);
   return (
     <div className={styles.root}>
       <input
         placeholder="Search for pizza"
         type="text"
-        value={searchInput}
-        onChange={(event) => setSearchInput(event.target.value)}
+        value={context.searchInput}
+        onChange={(event) => context.setSearchInput(event.target.value)}
       />
       <img src={seacrh} alt="search" className={styles.searchIcon} />
-      {searchInput && (
+      {context.searchInput && (
         <img
           src={closeSearch}
           alt="close"
-          onClick={() => setSearchInput('')}
+          onClick={() => context.setSearchInput('')}
           className={styles.closeIcon}
         />
       )}
