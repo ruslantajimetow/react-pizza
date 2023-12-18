@@ -3,26 +3,32 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { onChangeSortType, onOpenSortPopUp } from '../redux/slices/sortSlice';
 
+export const listPopup = [
+  { name: 'популярности', sort: 'rating' },
+  { name: 'цене', sort: 'price' },
+  { name: 'алфавиту', sort: 'title' },
+];
 const Sort = () => {
-  // const [showPopup, setShowPopup] = React.useState(false);
+  const sortRef = React.useRef();
   const sortType = useSelector((state) => state.sort.sortType);
   const isOpen = useSelector((state) => state.sort.isOpen);
   const dispatch = useDispatch();
 
-  const listPopup = [
-    { name: 'популярности', sort: 'rating' },
-    { name: 'цене', sort: 'price' },
-    { name: 'алфавиту', sort: 'title' },
-  ];
-
-  // const onClickShowPopup = () => {
-  //   setShowPopup((prev) => {
-  //     return !prev;
-  //   });
-  // };
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.composedPath().includes(sortRef.current)) {
+        dispatch(onOpenSortPopUp(false));
+        console.log('closed');
+      }
+    };
+    document.body.addEventListener('click', handleClickOutside);
+    return () => {
+      document.body.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div className="sort">
+    <div ref={sortRef} className="sort">
       <div className="sort__label">
         <svg
           width="10"

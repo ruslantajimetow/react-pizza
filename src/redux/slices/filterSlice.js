@@ -11,8 +11,11 @@ const filterSlice = createSlice({
     onChangeCategory: (state, action) => {
       state.categoryId = action.payload;
     },
+    setCategoryId: (state, action) => {
+      state.categoryId = Number(action.payload.category);
+    },
   },
 });
 
-export const { onChangeCategory } = filterSlice.actions;
+export const { onChangeCategory, setCategoryId } = filterSlice.actions;
 export default filterSlice.reducer;

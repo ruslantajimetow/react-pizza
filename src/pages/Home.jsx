@@ -1,23 +1,32 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import qs from 'qs';
 
 import Categories from '../components/Categories';
-import Sort from '../components/Sort';
+import Sort, { listPopup } from '../components/Sort';
 import PizzaBlock from '../components/PizzaBlock';
 import Skeleton from '../components/PizzaBlock/Skeleton';
 import Hamburger from '../components/Hamburger';
-import { useSelector } from 'react-redux';
 import { SearchContext } from '../App';
+import { setSortType } from '../redux/slices/sortSlice';
+import { setCategoryId } from '../redux/slices/filterSlice';
 
 const Home = () => {
-  const { searchInput } = React.useContext(SearchContext);
-  const categories = ['Все', 'Мясные', 'Вегетарианская', 'Гриль', 'Острые', 'Закрытые'];
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const isSearch = React.useRef(false);
+  const isMounted = React.useRef(false);
   const categoryId = useSelector((state) => state.filter.categoryId);
   const sortType = useSelector((state) => state.sort.sortType);
   const [items, setItems] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isOpenHamburger, setIsOpenHamburger] = React.useState(false);
+  const { searchInput } = React.useContext(SearchContext);
+  const categories = ['Все', 'Мясные', 'Вегетарианская', 'Гриль', 'Острые', 'Закрытые'];
 
-  const category = categoryId === 0 ? '' : `category=${categoryId}`;
+  const category = categoryId === 0 ? '' : categoryId;
 
   const findItems =
     searchInput !== ''
@@ -25,14 +34,40 @@ const Home = () => {
       : items;
 
   React.useEffect(() => {
-    setIsLoading(true);
-    fetch(`https://6569c8a0de53105b0dd7a8a7.mockapi.io/items?${category}&sortBy=${sortType.sort}`)
-      .then((res) => res.json())
-      .then((arr) => {
-        setItems(arr);
-        setIsLoading(false);
+    if (window.location.search) {
+      const params = qs.parse(window.location.search.substring(1));
+      const sort = listPopup.find((obj) => obj.sort === params.sort);
+
+      dispatch(setCategoryId(params));
+      dispatch(setSortType(sort));
+      isSearch.current = true;
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (!isSearch.current) {
+      setIsLoading(true);
+      axios
+        .get(
+          `https://6569c8a0de53105b0dd7a8a7.mockapi.io/items?category=${category}&sortBy=${sortType.sort}&search=${searchInput}`,
+        )
+        .then((res) => {
+          setItems(res.data);
+          setIsLoading(false);
+        });
+    }
+    isSearch.current = false;
+  }, [category, sortType, searchInput]);
+
+  React.useEffect(() => {
+    if (isMounted.current) {
+      const queryString = qs.stringify({
+        sort: sortType.sort,
+        category,
       });
-    window.scrollTo(0, 0);
+      navigate(`?${queryString}`);
+    }
+    isMounted.current = true;
   }, [category, sortType]);
 
   return (
@@ -54,6 +89,7 @@ const Home = () => {
               return (
                 <PizzaBlock
                   key={pizza.id}
+                  id={pizza.id}
                   sizes={pizza.sizes}
                   title={pizza.title}
                   price={pizza.price}

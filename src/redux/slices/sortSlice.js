@@ -16,8 +16,11 @@ const sortSlice = createSlice({
     onChangeSortType: (state, action) => {
       state.sortType = action.payload;
     },
+    setSortType: (state, action) => {
+      state.sortType = action.payload;
+    },
   },
 });
 
-export const { onOpenSortPopUp, onChangeSortType } = sortSlice.actions;
+export const { onOpenSortPopUp, onChangeSortType, setSortType } = sortSlice.actions;
 export default sortSlice.reducer;
